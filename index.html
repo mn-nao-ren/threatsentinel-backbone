@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ThreatSentinel GUI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>ThreatSentinel Web Application</h1>
+    <p>   You must provide 1 network traffic dataset and 1 source code dataset. Please select the datasets:</p>
+    <form id="datasetForm">
+      <label for="networkDataset">Network Traffic Dataset:</label>
+      <select id="networkDataset" required>
+        <option value="awid_full_dataset1.zip">ThreatSentinel Network Traffic Dataset</option>
+        <!-- Add more network datasets here if needed -->
+      </select>
+
+      <label for="codeGadgetDataset">Software Source Code Dataset:</label>
+      <select id="codeGadgetDataset" required>
+        <option value="cwe119_cgd_dataset.txt">ThreatSentinel Software Source Code Dataset</option>
+        <!-- Add more code gadget datasets here if needed -->
+      </select>
+
+      <!-- Update the submit button's onclick event to trigger the API call -->
+      <input type="button" value="Submit" id="submitBtn" onclick="submitForm()">
+      <p>Want to run ThreatSentinel on more datasets or other datasets? Open up the ThreatSentinel source code and replace the testing datasets with your own datasets.</p>
+    </form>
+    <div id="outputContainer">
+      <!-- The application's output will be displayed here -->
+    </div>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    function submitForm() {
+      // Get the selected datasets from the form
+      const selectedNetworkDataset = document.getElementById("networkDataset").value;
+      const selectedCodeGadgetDataset = document.getElementById("codeGadgetDataset").value;
+
+      // Make an API call to the Flask backend with the selected datasets
+      fetch("/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `network_traffic_dataset=${selectedNetworkDataset}&source_code_samples_dataset=${selectedCodeGadgetDataset}`,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // Update the outputContainer div with the results
+          document.getElementById("outputContainer").innerHTML = `
+            <p>Detected Threats: ${data.detected_threats}</p>
+            <p>Risk Assessment: ${data.risk_assessment}</p>
+          `;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          // Display error message if something goes wrong
+          document.getElementById("outputContainer").innerHTML = `
+            <p>Error occurred while processing the request.</p>
+          `;
+        });
+    }
+  </script>
+</body>
+</html>
